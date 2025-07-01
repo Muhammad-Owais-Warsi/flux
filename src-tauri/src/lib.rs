@@ -1,29 +1,216 @@
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-use reqwest;
-use serde_json::Value;
+use reqwest::{Body, Client, Method};
 
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct RequestConfig {
+    parameters: Option<Vec<(String, String)>>,
+    body: Option<String>,
+    headers: Option<Vec<(String, String)>>,
+    authorization: Option<Vec<(String, String)>>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct Props {
+    url: String,
+    method: String,
+    request_config: Option<RequestConfig>,
+}
 
 #[tauri::command]
-async fn call(url: &str, method: &str) -> Result<Value, String> {
-    println!("{} {}", url, method);
+async fn make_request(props: Props) -> Result<String, String> {
+    println!("{:?}", props);
+    let client: Client = Client::new();
 
-    let response = reqwest::get(url).await;
+    let method: Method = props
+        .method
+        .parse()
+        .map_err(|e| format!("Invalid HTTP method: {}", e))?;
 
-    match response {
-        Ok(resp) => match resp.json::<Value>().await {
-            Ok(body) => {
-                println!("{:?}", body);
-                Ok(body)
+    match method {
+        Method::GET => {
+            let mut request = client.request(method, props.url);
+
+            if let Some(request_config) = props.request_config {
+                if let Some(body) = request_config.body {
+                    request = request.header("Content-Type", "application/json");
+                    request = request.body(Body::from(body));
+                }
+
+                if let Some(parameters) = request_config.parameters {
+                    request = request.query(&parameters);
+                }
+
+                if let Some(headers) = request_config.headers {
+                    for (key, value) in headers.iter() {
+                        request = request.header(key, value);
+                    }
+                }
             }
-            ,
-            Err(err) => {
-                println!("Failed to read response body: {:?}", err);
-                Err(format!("Failed to read response body: {:?}", err))
+
+            match request.send().await {
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "<failed to read body>".into());
+                    println!("Status: {:?}, Body: {}", status, text);
+                    Ok((text))
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
+            }
+        }
+
+        Method::POST => {
+            let mut request = client.request(method, props.url);
+
+            if let Some(request_config) = props.request_config {
+                if let Some(body) = request_config.body {
+                    request = request.header("Content-Type", "application/json");
+                    request = request.body(Body::from(body));
+                }
+
+                if let Some(parameters) = request_config.parameters {
+                    request = request.form(&parameters);
+                }
+
+                if let Some(headers) = request_config.headers {
+                    for (key, value) in headers.iter() {
+                        request = request.header(key, value);
+                    }
+                }
+            }
+
+            match request.send().await {
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "<failed to read body>".into());
+                    println!("Status: {:?}, Body: {}", status, text);
+                    Ok((text))
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
             }
         },
-        Err(err) => {
-            println!("HTTP GET request failed: {:?}", err);
-            Err(format!("HTTP GET request failed: {:?}", err))
+
+        Method::PATCH => {
+            let mut request = client.request(method, props.url);
+
+            if let Some(request_config) = props.request_config {
+                if let Some(body) = request_config.body {
+                    request = request.body(Body::from(body));
+                }
+
+                if let Some(parameters) = request_config.parameters {
+                    request = request.form(&parameters);
+                }
+
+                if let Some(headers) = request_config.headers {
+                    for (key, value) in headers.iter() {
+                        request = request.header(key, value);
+                    }
+                }
+            }
+
+            match request.send().await {
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "<failed to read body>".into());
+                    println!("Status: {:?}, Body: {}", status, text);
+                    Ok((text))
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
+            }
+        },
+
+        Method::PUT => {
+            let mut request = client.request(method, props.url);
+
+            if let Some(request_config) = props.request_config {
+                if let Some(body) = request_config.body {
+                    request = request.body(Body::from(body));
+                }
+
+                if let Some(parameters) = request_config.parameters {
+                    request = request.form(&parameters);
+                }
+
+                if let Some(headers) = request_config.headers {
+                    for (key, value) in headers.iter() {
+                        request = request.header(key, value);
+                    }
+                }
+            }
+
+            match request.send().await {
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "<failed to read body>".into());
+                    println!("Status: {:?}, Body: {}", status, text);
+                    Ok((text))
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
+            }
+        },
+
+        Method::DELETE => {
+            let mut request = client.request(method, props.url);
+
+            if let Some(request_config) = props.request_config {
+                if let Some(body) = request_config.body {
+                    request = request.body(Body::from(body));
+                }
+
+                if let Some(parameters) = request_config.parameters {
+                    request = request.form(&parameters);
+                }
+
+                if let Some(headers) = request_config.headers {
+                    for (key, value) in headers.iter() {
+                        request = request.header(key, value);
+                    }
+                }
+            }
+
+            match request.send().await {
+                Ok(resp) => {
+                    let status = resp.status();
+                    let text = resp
+                        .text()
+                        .await
+                        .unwrap_or_else(|_| "<failed to read body>".into());
+                    println!("Status: {:?}, Body: {}", status, text);
+                    Ok((text))
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
+            }
+        },
+        _ => {
+            println!("{}", "post-alt");
+            Ok((String::from("dv")))
         }
     }
 }
@@ -33,7 +220,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![call])
+        .invoke_handler(tauri::generate_handler![make_request])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

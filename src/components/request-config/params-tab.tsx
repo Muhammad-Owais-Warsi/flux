@@ -23,25 +23,20 @@ export const ParamsTab = memo(({ tabPath }: { tabPath: string }) => {
     if (tabParams && Array.isArray(tabParams)) {
       return tabParams.map((param, index) => ({
         id: `param-${index}-${Date.now()}`,
-        key: typeof param === 'object' && 'key' in param ? param.key || '' : '',
-        value: typeof param === 'object' && 'value' in param ? param.value || '' : '',
+        key: Array.isArray(param) ? param[0] || '' : '',
+        value: Array.isArray(param) ? param[1] || '' : '',
       }))
     }
     return [{ id: "1", key: "", value: "" }]
   })
 
   useEffect(() => {
-    const paramsForStore = params
+    const paramsForStore: [string, string][] = params
       .filter(param => param.key || param.value)
-      .reduce((acc, param) => {
-        if (param.key) {
-          acc[param.key] = param.value
-        }
-        return acc
-      }, {} as Record<string, string>)
+      .map(param => [param.key, param.value] as [string, string])
     
     updateTabRequestOptions(tabPath, { 
-      parameters: Object.keys(paramsForStore).length > 0 ? [paramsForStore] : null 
+      parameters: paramsForStore.length > 0 ? paramsForStore : null 
     })
   }, [params, tabPath, updateTabRequestOptions])
 

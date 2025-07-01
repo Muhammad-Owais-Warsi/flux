@@ -24,8 +24,8 @@ export const HeadersTab = memo(({ tabPath }: { tabPath: string }) => {
     if (tabHeaders && Array.isArray(tabHeaders)) {
       return tabHeaders.map((header, index) => ({
         id: `header-${index}-${Date.now()}`,
-        key: typeof header === 'object' && 'key' in header ? header.key || '' : '',
-        value: typeof header === 'object' && 'value' in header ? header.value || '' : '',
+        key: Array.isArray(header) ? header[0] || '' : '',
+        value: Array.isArray(header) ? header[1] || '' : '',
       }))
     }
     return [{ id: "1", key: "", value: "" }]
@@ -33,17 +33,12 @@ export const HeadersTab = memo(({ tabPath }: { tabPath: string }) => {
 
  
   useEffect(() => {
-    const headersForStore = headers
+    const headersForStore: [string, string][] = headers
       .filter(header => header.key || header.value)
-      .reduce((acc, header) => {
-        if (header.key) {
-          acc[header.key] = header.value
-        }
-        return acc
-      }, {} as Record<string, string>)
+      .map(header => [header.key, header.value] as [string, string])
     
     updateTabRequestOptions(tabPath, { 
-      headers: Object.keys(headersForStore).length > 0 ? [headersForStore] : null 
+      headers: headersForStore.length > 0 ? headersForStore : null 
     })
   }, [headers, tabPath, updateTabRequestOptions])
 

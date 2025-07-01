@@ -29,32 +29,39 @@ export const AuthTab = memo(({ tabPath }: { tabPath: string }) => {
   // Initialize from tab data
   useEffect(() => {
     if (currentTab?.requestOptions.authorisation) {
-      const auth = currentTab.requestOptions.authorisation[0] || {}
-      setAuthType(auth.type || "none")
-      setToken(auth.token || "")
-      setUsername(auth.username || "")
-      setPassword(auth.password || "")
-      setApiKey(auth.apiKey || "")
-      setApiKeyHeader(auth.apiKeyHeader || "X-API-Key")
+      const authArray = currentTab.requestOptions.authorisation
+      const authObj: Record<string, string> = {}
+      
+      // Convert tuple array to object for easier handling
+      authArray.forEach(([key, value]) => {
+        authObj[key] = value
+      })
+      
+      setAuthType(authObj.type || "none")
+      setToken(authObj.token || "")
+      setUsername(authObj.username || "")
+      setPassword(authObj.password || "")
+      setApiKey(authObj.apiKey || "")
+      setApiKeyHeader(authObj.apiKeyHeader || "X-API-Key")
     }
   }, [currentTab])
 
   // Sync auth data to store
   useEffect(() => {
-    const authData: Record<string, string> = { type: authType }
+    const authTuples: [string, string][] = [["type", authType]]
     
     if (authType === "bearer" && token) {
-      authData.token = token
+      authTuples.push(["token", token])
     } else if (authType === "basic" && (username || password)) {
-      authData.username = username
-      authData.password = password
+      authTuples.push(["username", username])
+      authTuples.push(["password", password])
     } else if (authType === "apikey" && (apiKey || apiKeyHeader)) {
-      authData.apiKey = apiKey
-      authData.apiKeyHeader = apiKeyHeader
+      authTuples.push(["apiKey", apiKey])
+      authTuples.push(["apiKeyHeader", apiKeyHeader])
     }
 
     updateTabRequestOptions(tabPath, { 
-      authorisation: authType === "none" ? null : [authData]
+      authorisation: authType === "none" ? null : authTuples
     })
   }, [authType, token, username, password, apiKey, apiKeyHeader, tabPath, updateTabRequestOptions])
 

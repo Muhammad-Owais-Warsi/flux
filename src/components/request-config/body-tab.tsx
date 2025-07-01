@@ -43,7 +43,7 @@ export const BodyTab = memo(({ tabPath }: { tabPath: string }) => {
       try {
         const parsed = JSON.parse(value)
         setIsValidJson(true)
-        updateTabRequestOptions(tabPath, { body: [parsed] })
+        updateTabRequestOptions(tabPath, { body: JSON.stringify(parsed) })
       } catch {
         setIsValidJson(false)
         updateTabRequestOptions(tabPath, { body: value })

@@ -4,10 +4,10 @@ import database, { FileSystemItem } from "./data";
 export type RequestOptions = {
   method: string;
   url: string | null;
-  parameters: Record<string, string>[] | null;
-  body: Record<string, string>[] | string | null;
-  headers: Record<string, string>[] | null;
-  authorisation: Record<string, string>[] | null;
+  parameters: [string, string][] | null;
+  body: string | null;
+  headers: [string, string][] | null;
+  authorisation: [string, string][] | null;
 };
 
 export type Tab = {
