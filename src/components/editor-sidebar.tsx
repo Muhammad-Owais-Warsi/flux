@@ -31,7 +31,7 @@ const FileItem = React.memo(
     const { activeFile, openTab } = useFileStore();
 
     const handleClick = async () => {
-      await openTab(item.path, item.name, item.content);
+      await openTab(item.path, item.name, item.requestOptions);
     };
 
     const isActive = activeFile.path === item.path;
@@ -49,7 +49,7 @@ const FileItem = React.memo(
           style={{ paddingLeft: `${(depth + 1) * 12}px` }}
         >
           {/* <File className="h-4 w-4 flex-shrink-0" /> */}
-         <MethodBadge method={item.content?.method}/>
+         <MethodBadge method={item.requestOptions?.method }/>
           
           <span className="truncate flex-1 min-w-0" title={item.name}>
             {item.name}
@@ -147,6 +147,7 @@ export const EditorSidebar = React.memo(
       try {
         setLoading(true);
         const folderData = await database.readFolder();
+        console.log(folderData);
         setRawItems(folderData);
       } catch (error) {
         console.error("Error fetching folders:", error);
@@ -192,7 +193,7 @@ export const EditorSidebar = React.memo(
                         name: fileName,
                         path: tab.path,
                         isDirectory: false,
-                        content: tab.requestOptions
+                        requestOptions: tab.requestOptions 
                       };
                       return {
                         ...item,
@@ -217,7 +218,7 @@ export const EditorSidebar = React.memo(
                     name: fileName,
                     path: tab.path,
                     isDirectory: false,
-                    content: tab.requestOptions
+                    requestOptions: tab.requestOptions 
                   };
                   return [...prevItems, newItem];
                 }
@@ -234,11 +235,11 @@ export const EditorSidebar = React.memo(
         return items.map(item => {
           if (!item.isDirectory) {
             const openTab = tabMap.get(item.path);
-            if (openTab && item.content && openTab.requestOptions.method !== item.content.method) {
+            if (openTab && item.requestOptions && openTab.requestOptions.method !== item.requestOptions.method) {
               return {
                 ...item,
-                content: {
-                  ...item.content,
+                requestOptions: {
+                  ...item.requestOptions,
                   method: openTab.requestOptions.method
                 }
               };
@@ -272,7 +273,7 @@ export const EditorSidebar = React.memo(
                 path: newItemPath,
                 isDirectory: isFolder,
                 ...(isFolder ? {} : {
-                  content: {
+                  requestOptions: {
                     method: 'GET',
                     url: null,
                     parameters: null,
@@ -287,7 +288,6 @@ export const EditorSidebar = React.memo(
                 children: [...(item.children || []), newItem],
               };
             } else if (item.isDirectory && item.children) {
-              // Recursively check children
               return {
                 ...item,
                 children: updateItems(item.children),
@@ -297,14 +297,13 @@ export const EditorSidebar = React.memo(
           });
         };
 
-
         if (parentPath === "") {
           const newItem: FileSystemItem = {
             name: fileName,
             path: newItemPath,
             isDirectory: isFolder,
             ...(isFolder ? {} : {
-              content: {
+              requestOptions: {
                 method: 'GET',
                 url: null,
                 parameters: null,

@@ -20,7 +20,7 @@ export const RequestConfig = memo(({ tabPath }: { tabPath: string }) => {
     setActiveTab(value)
   }, [])
 
-  // Only render the active tab component to prevent unnecessary re-renders
+
   const renderActiveTabContent = useMemo(() => {
     const activeTabData = memoizedTabs.find(tab => tab.value === activeTab)
     if (!activeTabData) return null
@@ -38,7 +38,7 @@ export const RequestConfig = memo(({ tabPath }: { tabPath: string }) => {
             key={tab.value}
             onClick={() => handleTabChange(tab.value)}
             className={`
-              px-4 py-2 text-sm font-medium border-r border-border transition-colors duration-200
+              px-4 py-2 text-sm font-medium border-r border-border
               ${activeTab === tab.value
                 ? "bg-background text-foreground border-b-2 border-b-primary"
                 : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-background/50"

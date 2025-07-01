@@ -187,8 +187,6 @@ export const useFileStore = create<FileStore>()((set, get) => ({
     const tab = state.openTabs.find((t) => t.path === path);
     if (!tab) return;
 
-
-
     try {
       const fileData = {
         name: tab.name,
@@ -211,7 +209,6 @@ export const useFileStore = create<FileStore>()((set, get) => ({
   // File operations (move to data.ts)
   loadTabFromFile: async (tabId) => {
     try {
-      // Simple file load
       const fileKey = `file_${tabId.replace(/[^a-zA-Z0-9]/g, "_")}`;
       const saved = localStorage.getItem(fileKey);
 

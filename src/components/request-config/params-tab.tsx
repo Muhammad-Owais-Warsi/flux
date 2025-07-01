@@ -1,7 +1,6 @@
 import { memo, useState, useCallback, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Plus, Trash2 } from "lucide-react"
 import { useFileStore } from "@/utils/zustand"
 
@@ -12,14 +11,13 @@ interface Parameter {
 }
 
 export const ParamsTab = memo(({ tabPath }: { tabPath: string }) => {
+
   const { openTabs, updateTabRequestOptions } = useFileStore()
   
-  // Get tab-specific data
   const currentTab = useMemo(() => 
     openTabs.find(tab => tab.path === tabPath), [openTabs, tabPath]
   )
 
-  // Local state for parameters, initialize from tab data
   const [params, setParams] = useState<Parameter[]>(() => {
     const tabParams = currentTab?.requestOptions.parameters
     if (tabParams && Array.isArray(tabParams)) {
@@ -32,7 +30,6 @@ export const ParamsTab = memo(({ tabPath }: { tabPath: string }) => {
     return [{ id: "1", key: "", value: "" }]
   })
 
-  // Sync parameters to store when they change
   useEffect(() => {
     const paramsForStore = params
       .filter(param => param.key || param.value)
@@ -68,10 +65,6 @@ export const ParamsTab = memo(({ tabPath }: { tabPath: string }) => {
   }, [])
 
   const memoizedParams = useMemo(() => params, [params])
-  
-  const filledParams = useMemo(() => 
-    params.filter(param => param.key && param.value), [params]
-  )
 
   if (!currentTab) {
     return <div className="text-center text-muted-foreground">Tab not found</div>
@@ -120,21 +113,7 @@ export const ParamsTab = memo(({ tabPath }: { tabPath: string }) => {
           </div>
         ))}
       </div>
-
-      {filledParams.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-xs font-medium text-muted-foreground">Preview</h4>
-          <div className="flex flex-wrap gap-1">
-            {filledParams.map(param => (
-              <Badge key={param.id} variant="secondary" className="text-xs">
-                {param.key}={param.value}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 })
 
-ParamsTab.displayName = "ParamsTab"

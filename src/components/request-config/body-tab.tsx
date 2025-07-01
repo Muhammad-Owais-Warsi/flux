@@ -1,80 +1,56 @@
-import { memo, useState, useCallback, useMemo, useEffect } from "react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { memo, useState, useCallback, useEffect } from "react"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { useFileStore } from "@/utils/zustand"
 
-const bodyTypes = [
-  { value: "none", label: "No Body" },
-  { value: "json", label: "JSON" },
-  { value: "xml", label: "XML" },
-  { value: "form", label: "Form Data" },
-  { value: "raw", label: "Raw Text" },
-]
-
 export const BodyTab = memo(({ tabPath }: { tabPath: string }) => {
   const { openTabs, updateTabRequestOptions } = useFileStore()
+
+  const currentTab = openTabs.find(tab => tab.path === tabPath)
+  const rawBody = currentTab?.requestOptions.body
+
+  const [bodyContent, setBodyContent] = useState<string>("")
+  const [isValidJson, setIsValidJson] = useState(true)
+
+  useEffect(() => {
+    // Don't override if user already typed
+    if (bodyContent) return
   
-  // Get tab-specific data
-  const currentTab = useMemo(() => 
-    openTabs.find(tab => tab.path === tabPath), [openTabs, tabPath]
-  )
-
-  const [bodyType, setBodyType] = useState("none")
-  const [bodyContent, setBodyContent] = useState("")
-
-  // Initialize from tab data
-  useEffect(() => {
-    if (currentTab?.requestOptions.body) {
-      if (typeof currentTab.requestOptions.body === 'string') {
-        setBodyContent(currentTab.requestOptions.body)
-        setBodyType("raw")
-      } else if (Array.isArray(currentTab.requestOptions.body)) {
-        try {
-          setBodyContent(JSON.stringify(currentTab.requestOptions.body[0] || {}, null, 2))
-          setBodyType("json")
-        } catch {
-          setBodyContent("")
-          setBodyType("none")
-        }
-      }
-    }
-  }, [currentTab])
-
-  // Sync body data to store
-  useEffect(() => {
-    let bodyData: string | Record<string, string>[] | null = null
-    
-    if (bodyType !== "none" && bodyContent.trim()) {
-      if (bodyType === "json") {
-        try {
-          const parsed = JSON.parse(bodyContent)
-          bodyData = [parsed]
-        } catch {
-          bodyData = bodyContent
-        }
+    if (rawBody) {
+      if (typeof rawBody === "string") {
+        setBodyContent(rawBody)
       } else {
-        bodyData = bodyContent
+        try {
+          const initial = Array.isArray(rawBody)
+            ? JSON.stringify(rawBody[0] || {}, null, 2)
+            : JSON.stringify(rawBody, null, 2)
+          setBodyContent(initial)
+        } catch {
+          setBodyContent("{\n\n}")
+        }
       }
+    } else {
+      setBodyContent("{\n\n}")
     }
+  }, [rawBody])
 
-    updateTabRequestOptions(tabPath, { body: bodyData })
-  }, [bodyType, bodyContent, tabPath, updateTabRequestOptions])
 
-  const memoizedBodyTypes = useMemo(() => bodyTypes, [])
+  const handleBodyContentChange = useCallback(
+    (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const value = e.target.value
+      setBodyContent(value)
 
-  const handleBodyTypeChange = useCallback((value: string) => {
-    setBodyType(value)
-    if (value === "none") {
-      setBodyContent("")
-    } else if (value === "json" && !bodyContent) {
-      setBodyContent("{\n  \n}")
-    }
-  }, [bodyContent])
-
-  const handleBodyContentChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setBodyContent(e.target.value)
-  }, [])
+      try {
+        const parsed = JSON.parse(value)
+        setIsValidJson(true)
+        updateTabRequestOptions(tabPath, { body: [parsed] })
+      } catch {
+        setIsValidJson(false)
+        updateTabRequestOptions(tabPath, { body: value })
+      }
+    },
+    [tabPath, updateTabRequestOptions]
+  )
 
   if (!currentTab) {
     return <div className="text-center text-muted-foreground">Tab not found</div>
@@ -84,49 +60,23 @@ export const BodyTab = memo(({ tabPath }: { tabPath: string }) => {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-sm font-medium text-foreground">Request Body</h3>
-        {bodyType !== "none" && (
-          <Badge variant="outline" className="text-xs">
-            {memoizedBodyTypes.find(t => t.value === bodyType)?.label}
-          </Badge>
-        )}
+        <Badge variant={isValidJson ? "secondary" : "destructive"} className="text-xs">
+          {isValidJson ? "Valid JSON" : "Invalid JSON"}
+        </Badge>
       </div>
 
       <div className="space-y-2">
-        <label className="text-xs font-medium text-muted-foreground">Body Type</label>
-        <Select value={bodyType} onValueChange={handleBodyTypeChange}>
-          <SelectTrigger className="h-8">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {memoizedBodyTypes.map((type) => (
-              <SelectItem key={type.value} value={type.value}>
-                {type.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <label className="text-xs font-medium text-muted-foreground">Content</label>
+        <Textarea
+          placeholder="Enter JSON content here..."
+          value={bodyContent}
+          onChange={handleBodyContentChange}
+          className="min-h-[200px] font-mono text-xs"
+          rows={8}
+        />
       </div>
-
-      {bodyType !== "none" && (
-        <div className="space-y-2">
-          <label className="text-xs font-medium text-muted-foreground">Content</label>
-          <Textarea 
-            placeholder={`Enter ${bodyType} content here...`}
-            value={bodyContent}
-            onChange={handleBodyContentChange}
-            className="min-h-[200px] font-mono text-xs"
-            rows={8}
-          />
-        </div>
-      )}
-
-      {bodyType === "none" && (
-        <div className="text-center py-8">
-          <p className="text-sm text-muted-foreground">No request body</p>
-        </div>
-      )}
     </div>
   )
 })
 
-BodyTab.displayName = "BodyTab" 
+BodyTab.displayName = "BodyTab"

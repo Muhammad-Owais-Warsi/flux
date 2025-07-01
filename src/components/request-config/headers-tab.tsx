@@ -1,7 +1,6 @@
 import { memo, useState, useCallback, useMemo, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Plus, Trash2 } from "lucide-react"
 import { useFileStore } from "@/utils/zustand"
 
@@ -14,12 +13,12 @@ interface Header {
 export const HeadersTab = memo(({ tabPath }: { tabPath: string }) => {
   const { openTabs, updateTabRequestOptions } = useFileStore()
   
-  // Get tab-specific data
+
   const currentTab = useMemo(() => 
     openTabs.find(tab => tab.path === tabPath), [openTabs, tabPath]
   )
 
-  // Local state for headers, initialize from tab data
+
   const [headers, setHeaders] = useState<Header[]>(() => {
     const tabHeaders = currentTab?.requestOptions.headers
     if (tabHeaders && Array.isArray(tabHeaders)) {
@@ -32,7 +31,7 @@ export const HeadersTab = memo(({ tabPath }: { tabPath: string }) => {
     return [{ id: "1", key: "", value: "" }]
   })
 
-  // Sync headers to store when they change
+ 
   useEffect(() => {
     const headersForStore = headers
       .filter(header => header.key || header.value)
@@ -69,9 +68,7 @@ export const HeadersTab = memo(({ tabPath }: { tabPath: string }) => {
 
   const memoizedHeaders = useMemo(() => headers, [headers])
   
-  const filledHeaders = useMemo(() => 
-    headers.filter(header => header.key && header.value), [headers]
-  )
+
 
   if (!currentTab) {
     return <div className="text-center text-muted-foreground">Tab not found</div>
@@ -121,21 +118,8 @@ export const HeadersTab = memo(({ tabPath }: { tabPath: string }) => {
         ))}
       </div>
 
-      {filledHeaders.length > 0 && (
-        <div className="space-y-2">
-          <h4 className="text-xs font-medium text-muted-foreground">Active Headers</h4>
-          <div className="flex flex-wrap gap-1">
-            {filledHeaders.map(header => (
-              <Badge key={header.id} variant="secondary" className="text-xs">
-                {header.key}: {header.value}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   )
 })
 
-HeadersTab.displayName = "HeadersTab"
 

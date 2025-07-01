@@ -1,4 +1,4 @@
-import { readDir, mkdir, remove, BaseDirectory, exists, create, readTextFile, writeFile } from '@tauri-apps/plugin-fs';
+import { readDir, mkdir, remove, BaseDirectory, exists, readTextFile, writeFile } from '@tauri-apps/plugin-fs';
 import { RequestOptions } from './zustand';
 
 
@@ -8,7 +8,7 @@ export type FileSystemItem = {
   path: string;
   isDirectory: boolean;
   children?: FileSystemItem[];
-  content?: RequestOptions;
+  requestOptions?: RequestOptions;
 };
 
 class FileManagement {
@@ -31,12 +31,28 @@ class FileManagement {
 
   createFile = async (parent: string, name: string): Promise<boolean> => {
     try {
-
       await this.ensureBaseDirectory();
       
       const path = parent === '' ? `${this.basePath}/${name}` : `${this.basePath}/${parent}/${name}`;
 
-      await create(path, {
+      const defaultData = {
+        name: name,
+        requestOptions: {
+          method: "GET",
+          url: null,
+          parameters: null,
+          body: null,
+          headers: null,
+          authorisation: null
+        },
+        savedAt: new Date().toISOString()
+      }
+      const jsonString = JSON.stringify(defaultData);
+      
+      const encoder = new TextEncoder();
+      const binaryData = encoder.encode(jsonString);
+      
+      await writeFile(path, binaryData ,{
         baseDir: BaseDirectory.Document,
       });
 
@@ -144,11 +160,10 @@ class FileManagement {
             name: entry.name,
             path: currentPath,
             isDirectory: false,
-            content: content
+            requestOptions: content.requestOptions || content
           });
         } catch (e) {
           console.error(`Failed to read file ${entry.name}:`, e);
-          // Add file without content if reading fails
           items.push({
             name: entry.name,
             path: currentPath,
