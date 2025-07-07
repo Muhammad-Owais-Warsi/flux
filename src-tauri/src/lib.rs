@@ -1,5 +1,6 @@
 use reqwest::{Body, Client, Method};
 use std::collections::HashMap;
+use std::time::Instant;
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct AuthConfig {
@@ -22,15 +23,28 @@ struct Props {
     request_config: Option<RequestConfig>,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct HttpResponse {
+    status: u16,
+    status_text: String,
+    headers: HashMap<String, String>,
+    body: String,
+    url: String,
+    time_ms: u128,
+}
+
 #[tauri::command]
-async fn make_request(props: Props) -> Result<String, String> {
+async fn make_request(props: Props) -> Result<HttpResponse, String> {
     println!("{:?}", props);
     let client: Client = Client::new();
+    let start_time = Instant::now();
 
     let method: Method = props
         .method
         .parse()
         .map_err(|e| format!("Invalid HTTP method: {}", e))?;
+
+    // let request_url = props.url.clone();
 
     match method {
         Method::GET => {
@@ -79,13 +93,35 @@ async fn make_request(props: Props) -> Result<String, String> {
 
             match request.send().await {
                 Ok(resp) => {
+                    let elapsed = start_time.elapsed();
                     let status = resp.status();
+                    let status_code = status.as_u16();
+                    let status_text = status.canonical_reason().unwrap_or("Unknown").to_string();
+                    let url = resp.url().to_string();
+                    
+                    let mut response_headers = HashMap::new();
+                    for (key, value) in resp.headers().iter() {
+                        response_headers.insert(
+                            key.to_string(),
+                            value.to_str().unwrap_or("").to_string(),
+                        );
+                    }
+                    
                     let text = resp
                         .text()
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
-                    println!("Status: {:?}, Body: {}", status, text);
-                    Ok(text)
+                    
+                    // println!("Status: {:?}, Body: {}", status, text);
+                    
+                    Ok(HttpResponse {
+                        status: status_code,
+                        status_text,
+                        headers: response_headers,
+                        body: text,
+                        url: url,
+                        time_ms: elapsed.as_millis(),
+                    })
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -140,13 +176,35 @@ async fn make_request(props: Props) -> Result<String, String> {
 
             match request.send().await {
                 Ok(resp) => {
+                    let elapsed = start_time.elapsed();
                     let status = resp.status();
+                    let status_code = status.as_u16();
+                    let status_text = status.canonical_reason().unwrap_or("Unknown").to_string();
+                    let url = resp.url().to_string();
+                    
+                    let mut response_headers = HashMap::new();
+                    for (key, value) in resp.headers().iter() {
+                        response_headers.insert(
+                            key.to_string(),
+                            value.to_str().unwrap_or("").to_string(),
+                        );
+                    }
+                    
                     let text = resp
                         .text()
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
+                    
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok(text)
+                    
+                    Ok(HttpResponse {
+                        status: status_code,
+                        status_text,
+                        headers: response_headers,
+                        body: text,
+                        url: url,
+                        time_ms: elapsed.as_millis(),
+                    })
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -200,13 +258,35 @@ async fn make_request(props: Props) -> Result<String, String> {
 
             match request.send().await {
                 Ok(resp) => {
+                    let elapsed = start_time.elapsed();
                     let status = resp.status();
+                    let status_code = status.as_u16();
+                    let status_text = status.canonical_reason().unwrap_or("Unknown").to_string();
+                    let url = resp.url().to_string();
+                    
+                    let mut response_headers = HashMap::new();
+                    for (key, value) in resp.headers().iter() {
+                        response_headers.insert(
+                            key.to_string(),
+                            value.to_str().unwrap_or("").to_string(),
+                        );
+                    }
+                    
                     let text = resp
                         .text()
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
+                    
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok(text)
+                    
+                    Ok(HttpResponse {
+                        status: status_code,
+                        status_text,
+                        headers: response_headers,
+                        body: text,
+                        url: url,
+                        time_ms: elapsed.as_millis(),
+                    })
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -260,13 +340,35 @@ async fn make_request(props: Props) -> Result<String, String> {
 
             match request.send().await {
                 Ok(resp) => {
+                    let elapsed = start_time.elapsed();
                     let status = resp.status();
+                    let status_code = status.as_u16();
+                    let status_text = status.canonical_reason().unwrap_or("Unknown").to_string();
+                    let url = resp.url().to_string();
+                    
+                    let mut response_headers = HashMap::new();
+                    for (key, value) in resp.headers().iter() {
+                        response_headers.insert(
+                            key.to_string(),
+                            value.to_str().unwrap_or("").to_string(),
+                        );
+                    }
+                    
                     let text = resp
                         .text()
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
+                    
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok(text)
+                    
+                    Ok(HttpResponse {
+                        status: status_code,
+                        status_text,
+                        headers: response_headers,
+                        body: text,
+                        url: url,
+                        time_ms: elapsed.as_millis(),
+                    })
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -320,13 +422,35 @@ async fn make_request(props: Props) -> Result<String, String> {
 
             match request.send().await {
                 Ok(resp) => {
+                    let elapsed = start_time.elapsed();
                     let status = resp.status();
+                    let status_code = status.as_u16();
+                    let status_text = status.canonical_reason().unwrap_or("Unknown").to_string();
+                    let url = resp.url().to_string();
+                    
+                    let mut response_headers = HashMap::new();
+                    for (key, value) in resp.headers().iter() {
+                        response_headers.insert(
+                            key.to_string(),
+                            value.to_str().unwrap_or("").to_string(),
+                        );
+                    }
+                    
                     let text = resp
                         .text()
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
+                    
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok(text)
+                    
+                    Ok(HttpResponse {
+                        status: status_code,
+                        status_text,
+                        headers: response_headers,
+                        body: text,
+                        url: url,
+                        time_ms: elapsed.as_millis(),
+                    })
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -336,7 +460,7 @@ async fn make_request(props: Props) -> Result<String, String> {
         },
         _ => {
             println!("{}", "post-alt");
-            Ok(String::from("dv"))
+            Err(String::from("Unsupported HTTP method"))
         }
     }
 }

@@ -13,6 +13,15 @@ export type RequestOptions = {
   } | null;
 };
 
+export type HttpResponse = {
+  status: number;
+  status_text: string;
+  headers: Record<string, string>;
+  body: string;
+  url: string;
+  time_ms: number;
+};
+
 export type Tab = {
   path: string;
   name: string;
@@ -24,7 +33,9 @@ type FileStore = {
   openTabs: Tab[];
   activeTab: string | null;
   activeFile: { path: string; name: string };
-  result: any | null;
+  result: HttpResponse | null;
+  isLoading: boolean;
+  error: string | null;
   isFileChanged: boolean;
   hasUnsyncedChanges: boolean;
   sidebarItems: FileSystemItem[];
@@ -39,6 +50,9 @@ type FileStore = {
   saveTabToFile: (parent: string,tabId: string) => Promise<void>;
   loadTabFromFile: (path: string) => Promise<RequestOptions | null>;
   setActiveFile: (path: string, name: string) => void;
+  setResult: (response: HttpResponse | null) => void;
+  setLoading: (loading: boolean) => void;
+  setError: (error: string | null) => void;
 };
 
 export const useFileStore = create<FileStore>()((set, get) => ({
@@ -47,6 +61,8 @@ export const useFileStore = create<FileStore>()((set, get) => ({
   activeFile: { path: "", name: "" },
   activeFileName: "",
   result: null,
+  isLoading: false,
+  error: null,
   isFileChanged: false,
   hasUnsyncedChanges: false,
   sidebarItems: [],
@@ -235,6 +251,30 @@ export const useFileStore = create<FileStore>()((set, get) => ({
     } else {
       set((state) => ({ ...state, activeFile: { path, name } }));
     }
+  },
+
+  setResult: (response) => {
+    set((state) => ({
+      ...state,
+      result: response,
+      error: null,
+    }));
+  },
+
+  setLoading: (loading) => {
+    set((state) => ({
+      ...state,
+      isLoading: loading,
+      error: loading ? null : state.error,
+    }));
+  },
+
+  setError: (error) => {
+    set((state) => ({
+      ...state,
+      error,
+      isLoading: false,
+    }));
   },
 }));
 
