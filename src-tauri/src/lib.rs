@@ -1,12 +1,18 @@
 use reqwest::{Body, Client, Method};
+use std::collections::HashMap;
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+struct AuthConfig {
+    auth_type: String,
+    values: HashMap<String, String>,
+}
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 struct RequestConfig {
     parameters: Option<Vec<(String, String)>>,
     body: Option<String>,
     headers: Option<Vec<(String, String)>>,
-    authorization: Option<Vec<(String, String)>>,
+    authorisation: Option<AuthConfig>,
 }
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
@@ -45,6 +51,30 @@ async fn make_request(props: Props) -> Result<String, String> {
                         request = request.header(key, value);
                     }
                 }
+                
+                if let Some(authorisation) = request_config.authorisation {
+                    match authorisation.auth_type.as_str() {
+                        "basic" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(username) = authorisation.values.get("username") {
+                                let password = authorisation.values.get("password");
+                                request = request.basic_auth(username, password);
+                            }
+                        }
+                        
+                        "bearer" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(token) = authorisation.values.get("token") {
+                                request = request.bearer_auth(token);
+                            }
+                        }
+                        
+                        _ => {
+                            println!("{:?}", authorisation.values);
+                        }
+
+                    }
+                }
             }
 
             match request.send().await {
@@ -55,7 +85,7 @@ async fn make_request(props: Props) -> Result<String, String> {
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok((text))
+                    Ok(text)
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -74,12 +104,36 @@ async fn make_request(props: Props) -> Result<String, String> {
                 }
 
                 if let Some(parameters) = request_config.parameters {
-                    request = request.form(&parameters);
+                    request = request.query(&parameters);
                 }
 
                 if let Some(headers) = request_config.headers {
                     for (key, value) in headers.iter() {
                         request = request.header(key, value);
+                    }
+                }
+                
+                if let Some(authorisation) = request_config.authorisation {
+                    match authorisation.auth_type.as_str() {
+                        "basic" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(username) = authorisation.values.get("username") {
+                                let password = authorisation.values.get("password");
+                                request = request.basic_auth(username, password);
+                            }
+                        }
+                        
+                        "bearer" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(token) = authorisation.values.get("token") {
+                                request = request.bearer_auth(token);
+                            }
+                        }
+                        
+                        _ => {
+                            println!("{:?}", authorisation.values);
+                        }
+
                     }
                 }
             }
@@ -92,7 +146,7 @@ async fn make_request(props: Props) -> Result<String, String> {
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok((text))
+                    Ok(text)
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -110,12 +164,36 @@ async fn make_request(props: Props) -> Result<String, String> {
                 }
 
                 if let Some(parameters) = request_config.parameters {
-                    request = request.form(&parameters);
+                    request = request.query(&parameters);
                 }
 
                 if let Some(headers) = request_config.headers {
                     for (key, value) in headers.iter() {
                         request = request.header(key, value);
+                    }
+                }
+                
+                if let Some(authorisation) = request_config.authorisation {
+                    match authorisation.auth_type.as_str() {
+                        "basic" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(username) = authorisation.values.get("username") {
+                                let password = authorisation.values.get("password");
+                                request = request.basic_auth(username, password);
+                            }
+                        }
+                        
+                        "bearer" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(token) = authorisation.values.get("token") {
+                                request = request.bearer_auth(token);
+                            }
+                        }
+                        
+                        _ => {
+                            println!("{:?}", authorisation.values);
+                        }
+
                     }
                 }
             }
@@ -128,7 +206,7 @@ async fn make_request(props: Props) -> Result<String, String> {
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok((text))
+                    Ok(text)
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -146,12 +224,36 @@ async fn make_request(props: Props) -> Result<String, String> {
                 }
 
                 if let Some(parameters) = request_config.parameters {
-                    request = request.form(&parameters);
+                    request = request.query(&parameters);
                 }
 
                 if let Some(headers) = request_config.headers {
                     for (key, value) in headers.iter() {
                         request = request.header(key, value);
+                    }
+                }
+                
+                if let Some(authorisation) = request_config.authorisation {
+                    match authorisation.auth_type.as_str() {
+                        "basic" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(username) = authorisation.values.get("username") {
+                                let password = authorisation.values.get("password");
+                                request = request.basic_auth(username, password);
+                            }
+                        }
+                        
+                        "bearer" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(token) = authorisation.values.get("token") {
+                                request = request.bearer_auth(token);
+                            }
+                        }
+                        
+                        _ => {
+                            println!("{:?}", authorisation.values);
+                        }
+
                     }
                 }
             }
@@ -164,7 +266,7 @@ async fn make_request(props: Props) -> Result<String, String> {
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok((text))
+                    Ok(text)
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -182,12 +284,36 @@ async fn make_request(props: Props) -> Result<String, String> {
                 }
 
                 if let Some(parameters) = request_config.parameters {
-                    request = request.form(&parameters);
+                    request = request.query(&parameters);
                 }
 
                 if let Some(headers) = request_config.headers {
                     for (key, value) in headers.iter() {
                         request = request.header(key, value);
+                    }
+                }
+                
+                if let Some(authorisation) = request_config.authorisation {
+                    match authorisation.auth_type.as_str() {
+                        "basic" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(username) = authorisation.values.get("username") {
+                                let password = authorisation.values.get("password");
+                                request = request.basic_auth(username, password);
+                            }
+                        }
+                        
+                        "bearer" => {
+                            println!("{:?}", authorisation.values);
+                            if let Some(token) = authorisation.values.get("token") {
+                                request = request.bearer_auth(token);
+                            }
+                        }
+                        
+                        _ => {
+                            println!("{:?}", authorisation.values);
+                        }
+
                     }
                 }
             }
@@ -200,7 +326,7 @@ async fn make_request(props: Props) -> Result<String, String> {
                         .await
                         .unwrap_or_else(|_| "<failed to read body>".into());
                     println!("Status: {:?}, Body: {}", status, text);
-                    Ok((text))
+                    Ok(text)
                 }
                 Err(e) => {
                     println!("Request failed: {:?}", e);
@@ -210,7 +336,7 @@ async fn make_request(props: Props) -> Result<String, String> {
         },
         _ => {
             println!("{}", "post-alt");
-            Ok((String::from("dv")))
+            Ok(String::from("dv"))
         }
     }
 }

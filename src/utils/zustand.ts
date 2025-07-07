@@ -7,7 +7,10 @@ export type RequestOptions = {
   parameters: [string, string][] | null;
   body: string | null;
   headers: [string, string][] | null;
-  authorisation: [string, string][] | null;
+  authorisation: {
+    auth_type: 'bearer' | 'basic';
+    values: Record<string, string>;
+  } | null;
 };
 
 export type Tab = {
