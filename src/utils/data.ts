@@ -82,7 +82,7 @@ class FileManagement {
     }
   }
   
-  deleteItem = async (path: string): Promise<boolean> => {
+  deleteItem = async (parent: string ,path: string): Promise<boolean> => {
     try {
       const fullPath = `${this.basePath}/${path}`;
       console.log('Deleting item at path:', fullPath);

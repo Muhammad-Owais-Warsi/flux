@@ -24,19 +24,40 @@ import { useEffect, useState, useContext } from "react";
 import database, { FileSystemItem } from "@/utils/data";
 import { useFileStore } from "@/utils/zustand";
 import { FolderContext } from "@/utils/folder-context";
+// import { ContextMenu } from "@radix-ui/react-context-menu";
+import { ContextMenu ,ContextMenuContent, ContextMenuTrigger, ContextMenuItem } from "./ui/context-menu";
 
 
 const FileItem = React.memo(
-  ({ item, depth = 0 }: { item: FileSystemItem; depth?: number }) => {
-    const { activeFile, openTab } = useFileStore();
+  ({ item, depth = 0, onItemDeleted }: { item: FileSystemItem; depth?: number; onItemDeleted?: (path: string) => void }) => {
+    const { activeFile, openTab, closeTab } = useFileStore();
 
     const handleClick = async () => {
       await openTab(item.path, item.name, item.requestOptions);
     };
 
+    const handleDelete = async () => {
+      try {
+        console.log(item.path)
+        const success = await database.deleteItem("", item.path);
+        if (success) {
+          closeTab(item.path);
+
+          if (onItemDeleted) {
+            onItemDeleted(item.path);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to delete item:", error);
+        alert("Failed to delete item. Please try again.");
+      }
+    };
+
     const isActive = activeFile.path === item.path;
 
     return (
+      <ContextMenu>
+        <ContextMenuTrigger>
       <SidebarMenuItem>
         <SidebarMenuButton
           onClick={handleClick}
@@ -48,7 +69,7 @@ const FileItem = React.memo(
           )}
           style={{ paddingLeft: `${(depth + 1) * 12}px` }}
         >
-          {/* <File className="h-4 w-4 flex-shrink-0" /> */}
+
          <MethodBadge method={item.requestOptions?.method }/>
           
           <span className="truncate flex-1 min-w-0" title={item.name}>
@@ -56,13 +77,20 @@ const FileItem = React.memo(
           </span>
         </SidebarMenuButton>
       </SidebarMenuItem>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem inset variant="destructive" className="hover:cursor-pointer" onClick={handleDelete}>
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     );
   },
 );
 
 
 const FolderItem = React.memo(
-  ({ item, depth = 0 }: { item: FileSystemItem; depth?: number }) => {
+  ({ item, depth = 0, onItemDeleted }: { item: FileSystemItem; depth?: number; onItemDeleted?: (path: string) => void }) => {
     const { selectedFolder, setSelectedFolder } = useContext(FolderContext);
     const displayName = item.name;
 
@@ -72,8 +100,25 @@ const FolderItem = React.memo(
     };
 
     const isSelected = selectedFolder === item.path;
+    
+    const handleDelete = async () => {
+      try {
+        console.log(item.path)
+        const success = await database.deleteItem("", item.path);
+        if (success) {
+          if (onItemDeleted) {
+            onItemDeleted(item.path);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to delete item:", error);
+        alert("Failed to delete item. Please try again.");
+      }
+    };
 
     return (
+      <ContextMenu>
+        <ContextMenuTrigger>
       <SidebarMenuItem>
         <Collapsible
           className="group/collapsible [&[data-state=open]>button>svg:first-child]:rotate-90"
@@ -101,15 +146,22 @@ const FolderItem = React.memo(
             <SidebarMenuSub>
               {item.children?.map((child) =>
                 child.isDirectory ? (
-                  <FolderItem key={child.path} item={child} depth={depth + 1} />
+                  <FolderItem key={child.path} item={child} depth={depth + 1} onItemDeleted={onItemDeleted} />
                 ) : (
-                  <FileItem key={child.path} item={child} depth={depth} />
+                  <FileItem key={child.path} item={child} depth={depth} onItemDeleted={onItemDeleted} />
                 ),
               )}
             </SidebarMenuSub>
           </CollapsibleContent>
         </Collapsible>
       </SidebarMenuItem>
+        </ContextMenuTrigger>
+        <ContextMenuContent>
+          <ContextMenuItem inset variant="destructive" className="hover:cursor-pointer" onClick={handleDelete}>
+            Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
     );
   },
 );
@@ -156,6 +208,8 @@ export const EditorSidebar = React.memo(
         setLoading(false);
       }
     }, []);
+    
+
 
     
     const items = React.useMemo(() => {
@@ -320,6 +374,27 @@ export const EditorSidebar = React.memo(
       });
     }, []);
 
+    // to remove files and folders
+    const removeItemFromStructure = React.useCallback((itemPath: string) => {
+      setRawItems((prevItems) => {
+        const removeFromItems = (items: FileSystemItem[]): FileSystemItem[] => {
+          return items
+            .filter((item) => item.path !== itemPath)
+            .map((item) => {
+              if (item.isDirectory && item.children) {
+                return {
+                  ...item,
+                  children: removeFromItems(item.children),
+                };
+              }
+              return item;
+            });
+        };
+
+        return removeFromItems(prevItems);
+      });
+    }, []);
+
     useEffect(() => {
       fetchData();
     }, [fetchData]);
@@ -328,12 +403,12 @@ export const EditorSidebar = React.memo(
       () =>
         items.map((item) =>
           item.isDirectory ? (
-            <FolderItem key={item.path} item={item} depth={0} />
+            <FolderItem key={item.path} item={item} depth={0} onItemDeleted={removeItemFromStructure} />
           ) : (
-            <FileItem key={item.path} item={item} depth={0} />
+            <FileItem key={item.path} item={item} depth={0} onItemDeleted={removeItemFromStructure} />
           ),
         ),
-      [items],
+      [items, removeItemFromStructure],
     );
 
     const folderContextValue = React.useMemo(

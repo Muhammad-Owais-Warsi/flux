@@ -278,7 +278,3 @@ export const useFileStore = create<FileStore>()((set, get) => ({
   },
 }));
 
-
-// TODO
-// now only refract code (utils done)(components left)(at last improve requestconfig)
-// backend (rust)
