@@ -234,7 +234,6 @@ export const ResultToggle = memo(() => {
           </div>
         ) : (
           <div className="h-full flex flex-col bg-background">
-            {/* Horizontal tabs bar */}
             <div className="flex border-b border-border bg-muted/30 sticky top-0 z-10">
               {memoizedTabs.map((tab) => (
                 <button
