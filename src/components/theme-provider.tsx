@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react"
+import { getThemesByCategory } from "@/lib/themes"
 
-type Theme = "dark" | "light" | "system"
+type Theme = string
 
 type ThemeProviderProps = {
   children: React.ReactNode
@@ -14,11 +15,14 @@ type ThemeProviderState = {
 }
 
 const initialState: ThemeProviderState = {
-  theme: "system",
+  theme: "dark",
   setTheme: () => null,
 }
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
+
+// List of all available theme classes - update this when adding new themes to CSS
+const allThemeClasses = getThemesByCategory().map((v) => v.value)
 
 export function ThemeProvider({
   children,
@@ -33,17 +37,17 @@ export function ThemeProvider({
   useEffect(() => {
     const root = window.document.documentElement
 
-    root.classList.remove("light", "dark")
+    root.classList.remove(...allThemeClasses)
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light"
+    // if (theme === "system") {
+    //   const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
+    //     .matches
+    //     ? "dark"
+    //     : "light"
 
-      root.classList.add(systemTheme)
-      return
-    }
+    //   root.classList.add(systemTheme)
+    //   return
+    // }
 
     root.classList.add(theme)
   }, [theme])

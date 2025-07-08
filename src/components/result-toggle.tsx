@@ -56,10 +56,10 @@ export const ResultToggle = memo(() => {
   }, [])
 
   useEffect(() => {
-    if(result) {
+    if(result || error) {
       setIsOpen(true);
     }
-  },[result])
+  },[result, error])
 
   const formattedBody = useMemo(() => {
     if (!result?.body) return ""

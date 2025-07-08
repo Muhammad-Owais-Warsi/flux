@@ -2,7 +2,7 @@ import { memo, useCallback } from "react";
 import { PanelLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
-import { ModeToggle } from "./theme-toggle";
+import { ThemeSelector } from "./theme-selector";
 import { ResultToggle } from "./result-toggle";
 
 export const Footer = memo(() => {
@@ -22,7 +22,7 @@ export const Footer = memo(() => {
 
       <div className="flex items-center gap-2">
         <ResultToggle />
-        <ModeToggle />
+        <ThemeSelector />
       </div>
     </footer>
   );
