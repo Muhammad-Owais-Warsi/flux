@@ -42,6 +42,10 @@ export const themes: ThemeConfig[] = [
     name: "Supabase",
     value: "supabase",
 
+  },
+  {
+    name: "Soft Pop",
+    value: "softpop"
   }
 ]
 
