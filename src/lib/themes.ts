@@ -1,4 +1,3 @@
-import { Sun, Moon, Trees, Sunset } from "lucide-react"
 
 export interface ThemeConfig {
   name: string

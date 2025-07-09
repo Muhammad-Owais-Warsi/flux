@@ -12,14 +12,14 @@ export type FileSystemItem = {
 };
 
 class FileManagement {
-  private basePath = "testing-tauri";
+  private basePath = "flux-db";
 
   createFolder = async (parent: string, name: string): Promise<boolean> => {
     try {
       const path = parent === '' ? `${this.basePath}/${name}` : `${this.basePath}/${parent}/${name}`;
       
       await mkdir(path, {
-        baseDir: BaseDirectory.Document,
+        baseDir: BaseDirectory.AppData,
         recursive: true,
       });
       return true;
@@ -53,7 +53,7 @@ class FileManagement {
       const binaryData = encoder.encode(jsonString);
       
       await writeFile(path, binaryData ,{
-        baseDir: BaseDirectory.Document,
+        baseDir: BaseDirectory.AppData,
       });
 
       return true;
@@ -73,7 +73,7 @@ class FileManagement {
       const binaryContent = encoder.encode(jsonString);
   
       await writeFile(path, binaryContent, {
-        baseDir: BaseDirectory.Document
+        baseDir: BaseDirectory.AppData
       })
       
       return true;
@@ -84,11 +84,11 @@ class FileManagement {
   
   deleteItem = async (parent: string ,path: string): Promise<boolean> => {
     try {
-      const fullPath = `${this.basePath}/${path}`;
+      const fullPath = parent === '' ? `${this.basePath}/${path}` : `${this.basePath}/${parent}/${path}`;
       console.log('Deleting item at path:', fullPath);
       
       await remove(fullPath, {
-        baseDir: BaseDirectory.Document,
+        baseDir: BaseDirectory.AppData,
         recursive: true,
       });
       return true;
@@ -103,7 +103,7 @@ class FileManagement {
       await this.ensureBaseDirectory();
       
       const entries = await readDir(this.basePath, { 
-        baseDir: BaseDirectory.Document 
+        baseDir: BaseDirectory.AppData 
       });
       
       return await this.processEntriesRecursively('', entries);
@@ -126,7 +126,7 @@ class FileManagement {
         try {
           const subDir = parent ? `${this.basePath}/${parent}/${entry.name}` : `${this.basePath}/${entry.name}`;
           const subEntries = await readDir(subDir, { 
-            baseDir: BaseDirectory.Document 
+            baseDir: BaseDirectory.AppData 
           });
           
           const children = await this.processEntriesRecursively(
@@ -153,7 +153,7 @@ class FileManagement {
         try {
           const filePath = parent ? `${this.basePath}/${parent}/${entry.name}` : `${this.basePath}/${entry.name}`;
           const contentString = await readTextFile(filePath, {
-            baseDir: BaseDirectory.Document
+            baseDir: BaseDirectory.AppData
           });
           const content = JSON.parse(contentString);
           items.push({
@@ -179,13 +179,13 @@ class FileManagement {
   private ensureBaseDirectory = async (): Promise<void> => {
     try {
       const baseExists = await exists(this.basePath, {
-        baseDir: BaseDirectory.Document,
+        baseDir: BaseDirectory.AppData,
       });
       
       if (!baseExists) {
         console.log('Creating base directory:', this.basePath);
         await mkdir(this.basePath, {
-          baseDir: BaseDirectory.Document,
+          baseDir: BaseDirectory.AppData,
           recursive: true,
         });
       }
