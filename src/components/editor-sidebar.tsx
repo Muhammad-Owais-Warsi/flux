@@ -24,7 +24,6 @@ import { useEffect, useState, useContext } from "react";
 import database, { FileSystemItem } from "@/utils/data";
 import { useFileStore } from "@/utils/zustand";
 import { FolderContext } from "@/utils/folder-context";
-// import { ContextMenu } from "@radix-ui/react-context-menu";
 import { ContextMenu ,ContextMenuContent, ContextMenuTrigger, ContextMenuItem } from "./ui/context-menu";
 
 
