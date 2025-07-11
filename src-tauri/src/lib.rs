@@ -214,6 +214,37 @@ async fn make_request(props: Props) -> Result<HttpResponse, String> {
                 }
             }
         },
+        
+        Method::HEAD => {
+            let mut request = client.request(method, props.url);   
+            
+            match request.send().await {
+                Ok(resp) => {
+                    let result = build_result(resp, start_time).await;   
+                    Ok(result)
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
+            }
+        },
+        
+        Method::OPTIONS => {
+            let mut request = client.request(method, props.url);   
+            
+            match request.send().await {
+                Ok(resp) => {
+                    let result = build_result(resp, start_time).await;   
+                    Ok(result)
+                }
+                Err(e) => {
+                    println!("Request failed: {:?}", e);
+                    Err(format!("Request failed: {}", e))
+                }
+            }
+        }
+      
         _ => {
             println!("{}", "post-alt");
             Err(String::from("Unsupported HTTP method"))
