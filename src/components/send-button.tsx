@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Send, Loader2 } from "lucide-react";
 import { useFileStore, HttpResponse } from "@/utils/zustand";
 import { invoke } from "@tauri-apps/api/core";
+import generate from "@/utils/code";
 
 const SendButton = memo(({ tabPath }: { tabPath?: string }) => {
   const { openTabs, setResult, setLoading, setError, isLoading } = useFileStore();
@@ -18,6 +19,8 @@ const SendButton = memo(({ tabPath }: { tabPath?: string }) => {
     setResult(null);
     setError(null);
     setLoading(true);
+    
+    console.log(generate(currentTab.requestOptions));
 
     if(currentTab.requestOptions.url) {
       try {

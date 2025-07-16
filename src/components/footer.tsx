@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ThemeSelector } from "./theme-selector";
 import { ResultToggle } from "./result-toggle";
+import { CodeSnippets } from "./code-snippets";
 
 export const Footer = memo(() => {
   const { toggleSidebar } = useSidebar();
@@ -21,6 +22,7 @@ export const Footer = memo(() => {
       </div>
 
       <div className="flex items-center gap-2">
+        <CodeSnippets />
         <ResultToggle />
         <ThemeSelector />
       </div>
