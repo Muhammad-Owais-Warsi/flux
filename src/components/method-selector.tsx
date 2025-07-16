@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useFileStore } from "@/utils/zustand";
+import MethodBadge from "./method-badge";
 
 const HTTP_METHODS = [
   "GET",
@@ -23,7 +24,7 @@ const MethodSelector = memo(({ tabPath }: { tabPath?: string }) => {
 
   const currentTab = useMemo(
     () => (tabPath ? openTabs.find((tab) => tab.path === tabPath) : null),
-    [openTabs, tabPath],
+    [openTabs, tabPath]
   );
 
   const currentMethod = currentTab?.requestOptions.method || "GET";
@@ -34,7 +35,7 @@ const MethodSelector = memo(({ tabPath }: { tabPath?: string }) => {
         updateTabRequestOptions(tabPath, { method: newMethod });
       }
     },
-    [tabPath, updateTabRequestOptions],
+    [tabPath, updateTabRequestOptions]
   );
 
   const memoizedMethods = useMemo(() => HTTP_METHODS, []);
@@ -57,7 +58,7 @@ const MethodSelector = memo(({ tabPath }: { tabPath?: string }) => {
       <SelectContent>
         {memoizedMethods.map((method) => (
           <SelectItem key={method} value={method}>
-            {method}
+            <MethodBadge method={method} />
           </SelectItem>
         ))}
       </SelectContent>
