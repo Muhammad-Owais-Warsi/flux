@@ -44,13 +44,18 @@ const FileItem = React.memo(
 
     const handleDelete = async () => {
       try {
-        const success = await database.deleteItem("", item.path);
-        if (success) {
-          closeTab(item.path);
+        const fileExists = await database.fileExists("", item.path);
 
-          if (onItemDeleted) {
-            onItemDeleted(item.path);
+        if (fileExists) {
+          const success = await database.deleteItem("", item.path);
+          if (!success) {
+            throw new Error("Failed to delete file from filesystem");
           }
+        }
+
+        closeTab(item.path);
+        if (onItemDeleted) {
+          onItemDeleted(item.path);
         }
       } catch (error) {
         console.error("Failed to delete item:", error);
@@ -112,11 +117,20 @@ const FolderItem = React.memo(
 
     const handleDelete = async () => {
       try {
-        const success = await database.deleteItem("", item.path);
-        if (success) {
-          if (onItemDeleted) {
-            onItemDeleted(item.path);
+        // Check if folder exists before attempting to delete
+        const folderExists = await database.fileExists("", item.path);
+
+        if (folderExists) {
+          // Folder exists in filesystem, delete it
+          const success = await database.deleteItem("", item.path);
+          if (!success) {
+            throw new Error("Failed to delete folder from filesystem");
           }
+        }
+
+        // Always remove from UI regardless of filesystem state
+        if (onItemDeleted) {
+          onItemDeleted(item.path);
         }
       } catch (error) {
         console.error("Failed to delete item:", error);
